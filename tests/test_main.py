@@ -55,11 +55,15 @@ def test_mocker_patch_object(mocker):
     assert greeter.greet() == "hello"
 
 
-# ?? why is this failing now??
+# * and here we can reach into the module's scope and patch the function that our class under test
+# * is dependent on.
+# ! note that the patch itself only needs to happen before the assertion!
+# * This was really weird to find out, you can move the `mocker.patch...` line anywhere in the order
+# * of these lines and it will pass as long as you don't put it _after_ the assertion. I wasn't surprised
+# * that it could happen before the import of the Greeter class definition, but I was a bit surprised that
+# * you could patch it after the instantiation of the `greeter` instance!
 def test_mock_a_dependency_function_used_by_a_class(mocker):
     mocker.patch('src.main.hold_door', return_value="hold on, I got that")
-    # mocker.patch('src.main.hold_door', return_value="hold on, I got that")
-    from main import Greeter
-
+    from src.main import Greeter
     greeter = Greeter()
     assert greeter.hold_door_open() == "hold on, I got that"
